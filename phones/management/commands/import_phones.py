@@ -1,6 +1,8 @@
 import csv
 
 from django.core.management.base import BaseCommand
+from django.template.defaultfilters import slugify
+
 from phones.models import Phone
 
 
@@ -9,12 +11,11 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        with open('phones.csv', 'r') as csvfile:
+        with open('phones.csv', 'r') as file:
+            phones = list(csv.DictReader(file, delimiter=';'))
 
-            phone_reader = csv.reader(csvfile, delimiter=';')
-            # пропускаем заголовок
-            next(phone_reader)
-
-            for line in phone_reader:
-                # TODO: Добавьте сохранение модели
-                pass
+        for phone in phones:
+            id, name, image, price, release_date, lte_exists = phone.values()
+            slug = slugify(name)
+            phone = Phone(id=id, name=name, image=image, price=price, release_date=release_date, lte_exists=lte_exists, slug=slug)
+            phone.save()
